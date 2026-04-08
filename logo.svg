@@ -1,0 +1,90 @@
+<svg width="680" height="280" viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg">
+  <title>SVG Pattern Generator</title>
+
+  <style>
+    .hex { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .title-main { font-family: 'Courier New', monospace; font-size: 36px; font-weight: 700; fill: #F27405; letter-spacing: 2px; }
+    .title-sub  { font-family: 'Courier New', monospace; font-size: 36px; font-weight: 400; fill: #8A8D92; letter-spacing: 2px; }
+    .tagline    { font-family: 'Courier New', monospace; font-size: 13px; font-weight: 400; fill: #555860; letter-spacing: 3px; }
+  </style>
+
+  <defs>
+    <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0E0F11" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0E0F11" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="680" height="280" fill="#0E0F11" rx="12"/>
+
+  <!-- Row 0 -->
+  <polygon class="hex" points="44,28 61,18 78,28 78,48 61,58 44,48" stroke="#03A678" stroke-width="1.5" opacity="0.9"/>
+  <polygon class="hex" points="78,28 95,18 112,28 112,48 95,58 78,48" stroke="#F27405" stroke-width="1.5" opacity="0.7"/>
+  <polygon class="hex" points="112,28 129,18 146,28 146,48 129,58 112,48" stroke="#02735E" stroke-width="1.2" opacity="0.5"/>
+  <polygon class="hex" points="146,28 163,18 180,28 180,48 163,58 146,48" stroke="#F2B705" stroke-width="1" opacity="0.35"/>
+  <polygon class="hex" points="180,28 197,18 214,28 214,48 197,58 180,48" stroke="#555860" stroke-width="0.8" opacity="0.2"/>
+  <!-- Row 1 -->
+  <polygon class="hex" points="27,58 44,48 61,58 61,78 44,88 27,78" stroke="#014040" stroke-width="1" opacity="0.4"/>
+  <polygon class="hex" points="61,58 78,48 95,58 95,78 78,88 61,78" stroke="#F27405" stroke-width="2" opacity="1"/>
+  <polygon class="hex" points="95,58 112,48 129,58 129,78 112,88 95,78" stroke="#03A678" stroke-width="1.5" opacity="0.85"/>
+  <polygon class="hex" points="129,58 146,48 163,58 163,78 146,88 129,78" stroke="#02735E" stroke-width="1.2" opacity="0.6"/>
+  <polygon class="hex" points="163,58 180,48 197,58 197,78 180,88 163,78" stroke="#F2B705" stroke-width="1" opacity="0.4"/>
+  <polygon class="hex" points="197,58 214,48 231,58 231,78 214,88 197,78" stroke="#555860" stroke-width="0.8" opacity="0.2"/>
+  <!-- Row 2 -->
+  <polygon class="hex" points="44,88 61,78 78,88 78,108 61,118 44,108" stroke="#731702" stroke-width="1" opacity="0.45"/>
+  <polygon class="hex" points="78,88 95,78 112,88 112,108 95,118 78,108" stroke="#F2B705" stroke-width="1.8" opacity="0.9"/>
+  <polygon class="hex" points="112,88 129,78 146,88 146,108 129,118 112,108" stroke="#F27405" stroke-width="2.5" opacity="1"/>
+  <polygon class="hex" points="146,88 163,78 180,88 180,108 163,118 146,108" stroke="#03A678" stroke-width="1.5" opacity="0.75"/>
+  <polygon class="hex" points="180,88 197,78 214,88 214,108 197,118 180,108" stroke="#02735E" stroke-width="1" opacity="0.4"/>
+  <polygon class="hex" points="214,88 231,78 248,88 248,108 231,118 214,108" stroke="#555860" stroke-width="0.7" opacity="0.18"/>
+  <!-- Row 3 -->
+  <polygon class="hex" points="27,118 44,108 61,118 61,138 44,148 27,138" stroke="#555860" stroke-width="0.8" opacity="0.2"/>
+  <polygon class="hex" points="61,118 78,108 95,118 95,138 78,148 61,138" stroke="#014040" stroke-width="1" opacity="0.35"/>
+  <polygon class="hex" points="95,118 112,108 129,118 129,138 112,148 95,138" stroke="#F2B705" stroke-width="1.5" opacity="0.7"/>
+  <polygon class="hex" points="129,118 146,108 163,118 163,138 146,148 129,138" stroke="#F27405" stroke-width="2" opacity="0.95"/>
+  <polygon class="hex" points="163,118 180,108 197,118 197,138 180,148 163,138" stroke="#03A678" stroke-width="1.8" opacity="0.9"/>
+  <polygon class="hex" points="197,118 214,108 231,118 231,138 214,148 197,138" stroke="#02735E" stroke-width="1.2" opacity="0.5"/>
+  <polygon class="hex" points="231,118 248,108 265,118 265,138 248,148 231,138" stroke="#555860" stroke-width="0.7" opacity="0.18"/>
+  <!-- Row 4 -->
+  <polygon class="hex" points="44,148 61,138 78,148 78,168 61,178 44,168" stroke="#555860" stroke-width="0.7" opacity="0.18"/>
+  <polygon class="hex" points="78,148 95,138 112,148 112,168 95,178 78,168" stroke="#014040" stroke-width="1" opacity="0.3"/>
+  <polygon class="hex" points="112,148 129,138 146,148 146,168 129,178 112,168" stroke="#731702" stroke-width="1" opacity="0.4"/>
+  <polygon class="hex" points="146,148 163,138 180,148 180,168 163,178 146,168" stroke="#F2B705" stroke-width="1.5" opacity="0.65"/>
+  <polygon class="hex" points="180,148 197,138 214,148 214,168 197,178 180,168" stroke="#F27405" stroke-width="2" opacity="0.85"/>
+  <polygon class="hex" points="214,148 231,138 248,148 248,168 231,178 214,168" stroke="#03A678" stroke-width="1.5" opacity="0.7"/>
+  <polygon class="hex" points="248,148 265,138 282,148 282,168 265,178 248,168" stroke="#555860" stroke-width="0.7" opacity="0.15"/>
+  <!-- Row 5 -->
+  <polygon class="hex" points="61,178 78,168 95,178 95,198 78,208 61,198" stroke="#555860" stroke-width="0.6" opacity="0.15"/>
+  <polygon class="hex" points="95,178 112,168 129,178 129,198 112,208 95,198" stroke="#02735E" stroke-width="1" opacity="0.35"/>
+  <polygon class="hex" points="129,178 146,168 163,178 163,198 146,208 129,198" stroke="#014040" stroke-width="1" opacity="0.3"/>
+  <polygon class="hex" points="163,178 180,168 197,178 197,198 180,208 163,198" stroke="#F2B705" stroke-width="1.2" opacity="0.5"/>
+  <polygon class="hex" points="197,178 214,168 231,178 231,198 214,208 197,198" stroke="#F27405" stroke-width="1.5" opacity="0.7"/>
+  <polygon class="hex" points="231,178 248,168 265,178 265,198 248,208 231,198" stroke="#03A678" stroke-width="1" opacity="0.4"/>
+  <!-- Row 6 -->
+  <polygon class="hex" points="78,208 95,198 112,208 112,228 95,238 78,228" stroke="#555860" stroke-width="0.6" opacity="0.12"/>
+  <polygon class="hex" points="112,208 129,198 146,208 146,228 129,238 112,228" stroke="#555860" stroke-width="0.7" opacity="0.18"/>
+  <polygon class="hex" points="146,208 163,198 180,208 180,228 163,238 146,228" stroke="#02735E" stroke-width="1" opacity="0.3"/>
+  <polygon class="hex" points="180,208 197,198 214,208 214,228 197,238 180,228" stroke="#F27405" stroke-width="1" opacity="0.4"/>
+  <polygon class="hex" points="214,208 231,198 248,208 248,228 231,238 214,228" stroke="#03A678" stroke-width="0.8" opacity="0.25"/>
+
+  <!-- Fade vignette -->
+  <rect x="200" y="0" width="120" height="280" fill="url(#fade)"/>
+
+  <!-- Vertical separator -->
+  <line x1="310" y1="40" x2="310" y2="240" stroke="#2A2D32" stroke-width="1"/>
+
+  <!-- Accent top line -->
+  <line x1="330" y1="72" x2="640" y2="72" stroke="#F27405" stroke-width="2"/>
+
+  <!-- Title -->
+  <text x="330" y="120" class="title-main">SVG</text>
+  <text x="330" y="162" class="title-sub">PATTERN</text>
+  <text x="330" y="204" class="title-sub">GENERATOR</text>
+
+  <!-- Bottom accent line -->
+  <line x1="330" y1="218" x2="640" y2="218" stroke="#2A2D32" stroke-width="1"/>
+
+  <!-- Tagline -->
+  <text x="330" y="242" class="tagline">HEXAGONS · CIRCLES · SQUARES</text>
+</svg>
