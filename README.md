@@ -18,7 +18,7 @@ A desktop tool for generating SVG patterns of hexagons, circles, and squares —
 
 ## Screenshot
 
-> _Run the app and resize the window — the preview panel fills the right side._
+![screenshot](Screenshot.png)
 
 ## Requirements
 
@@ -34,9 +34,9 @@ sudo dnf install python3-tkinter # Fedora
 ## Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/svg-pattern-generator.git
-cd svg-pattern-generator
-python svg_pattern_generator.py
+git clone https://github.com/anandhusjone/SVG-Pattern-Generator.git
+cd SVG-Pattern-Generator
+python pattern_gen_v1.0.py
 ```
 
 No `pip install` needed — zero external dependencies.
