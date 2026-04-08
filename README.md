@@ -1,4 +1,5 @@
 # SVG Pattern Generator
+![logo](logo.svg)
 
 A desktop tool for generating SVG patterns of hexagons, circles, and squares — with a live preview, multiple palettes, and flexible layout modes.
 
