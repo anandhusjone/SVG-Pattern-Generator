@@ -8,7 +8,7 @@ A desktop tool for generating SVG patterns of hexagons, circles, and squares —
 
 ## Features
 
-- **3 pattern types** — Helix, Random scatter, Honeycomb grid
+- **3 pattern types** — Helix, Random, Grid
 - **3 shape types** — Hexagon, Circle, Square
 - **12 color palettes** + monochrome mode
 - **Live preview** — scaled to canvas aspect ratio with white background
