@@ -22,6 +22,14 @@ PALETTES = [
     {"name": "Sand Dune",      "colors": ["#F2CA52", "#F2D57E", "#D9A23D", "#F2D399", "#F2EBDF"]},
     {"name": "Amber Fire",     "colors": ["#F2B705", "#F29F05", "#F28705", "#F27405", "#732C02"]},
     {"name": "Midnight",       "colors": ["#011126", "#0F1D26", "#F2F0C9", "#F2E2C4", "#BFB49F"]},
+    {"name": "Alphane Labs",   "colors": ["#0487D9", "#0CB1F2", "#0FC9F2", "#99E2F2", "#F2F2F2"]},
+    {"name": "Lincoln Zephyr", "colors": ["#232B59", "#182240", "#BF948A", "#8C5D58", "#0D0D0D"]},
+    {"name": "Deep Navy",      "colors": ["#010326", "#040959", "#0B1F8C", "#1F37BF", "#C9DFF2"]},
+    {"name": "Guardbase",      "colors": ["#0E1826", "#012340", "#2E4959", "#687E8C", "#F2F2F2"]},
+    {"name": "Vare Wallet",    "colors": ["#D9A282", "#733F2C", "#400D02", "#BF4D34", "#F2F2F2"]},
+    {"name": "Ground Z",       "colors": ["#D97E85", "#D95B89", "#D92B7C", "#D9A491", "#0D0D0D"]},
+    {"name": "12 Zodiacs",     "colors": ["#D93B58", "#4E35F2", "#84F280", "#37D90B", "#D2D90B"]},
+    {"name": "Imperium",       "colors": ["#F2CB05", "#F29F05", "#73635F", "#BF3939", "#F2F2F2"]},
 ]
 
 MONO_PALETTE = {"name": "Monochrome", "colors": ["#CCCCCC", "#999999", "#666666", "#444444", "#222222"]}
@@ -70,18 +78,10 @@ def _make_shape_svg(shape, cx, cy, radius, color, stroke_width="1", opacity="1")
                 f'stroke-opacity="{opacity}"/>\n')
 
 
-def generate_hex_svg(params, output_file: str) -> str:
+def build_svg(params) -> str:
     """
-    Generate an SVG pattern of hexagons, circles, or squares and write it to output_file.
-
-    Reads pattern parameters from the params dict:
-      width, height, pattern ('grid'|'helix'|'random'),
-      shape ('hexagon'|'circle'|'square'),
-      count, hex_size, spacing, palette (list of hex color strings),
-      inverse_thickness (bool).
-
-    Writes the SVG to output_file and returns the path.
-    Raises ValueError for invalid canvas dimensions.
+    Generate and return an SVG string for the given params.
+    Pure function — no file I/O, no GUI deps.
     """
     width        = params["width"]
     height       = params["height"]
@@ -93,74 +93,71 @@ def generate_hex_svg(params, output_file: str) -> str:
     palette      = params["palette"]
     inverse      = params["inverse_thickness"]
 
-    # validate canvas dimensions
     if width <= 0 or height <= 0:
         raise ValueError(f"Canvas dimensions must be positive (got {width}x{height}).")
 
-    elements   = []
-    amplitude  = height * 0.25
-    frequency  = 2 * math.pi / width * 3
+    elements  = []
+    amp_frac  = params.get("amplitude", 0.5)
+    amplitude = height * 0.5 * amp_frac
+    waves     = params.get("wavelength", 3.0)
+    frequency = 2 * math.pi / width * waves
 
-    # -- GRID ------------------------------
     if pattern_type == "grid":
         radius = hex_size
         gap    = max(-radius * 0.9, spacing)
-
         if shape == "hexagon":
             horiz_spacing = math.sqrt(3) * radius + gap
-            vert_spacing  = 1.5 * radius + gap * 0.5
+            vert_spacing  = 1.5 * radius + gap
             row, y = 0, radius
             while y - radius < height:
                 x_offset = 0 if row % 2 == 0 else horiz_spacing / 2
                 x = radius + x_offset
                 while x - radius < width:
-                    color = random.choice(palette)
-                    elements.append(_make_shape_svg(shape, x, y, radius, color))
+                    elements.append(_make_shape_svg(shape, x, y, radius,
+                                                    random.choice(palette)))
                     x += horiz_spacing
                 y += vert_spacing
                 row += 1
-        else:  # circle or square — same rectilinear grid layout
+        else:
             step = radius * 2 + gap
             y = radius
             while y - radius < height:
                 x = radius
                 while x - radius < width:
-                    color = random.choice(palette)
-                    elements.append(_make_shape_svg(shape, x, y, radius, color))
+                    elements.append(_make_shape_svg(shape, x, y, radius,
+                                                    random.choice(palette)))
                     x += step
                 y += step
-
-    # -- HELIX / RANDOM --------------------
     else:
         min_r   = width * 0.005
         max_r   = width * 0.04
         r_range = max_r - min_r or 1.0
-
         for _ in range(count):
             radius = random.uniform(min_r, max_r)
             cx     = random.uniform(radius, width - radius)
-
             if pattern_type == "helix":
                 strand = random.choice([0, math.pi])
                 cy     = (height / 2) + math.sin(cx * frequency + strand) * amplitude
                 cy     = max(radius, min(height - radius, cy))
             else:
                 cy = random.uniform(radius, height - radius)
-
             norm         = (radius - min_r) / r_range
             stroke_width = f"{0.5 + ((1 - norm) if inverse else norm) * 4:.2f}"
             opacity      = f"{max(0.2, 0.9 - norm):.2f}"
-            color        = random.choice(palette)
+            elements.append(_make_shape_svg(shape, cx, cy, radius,
+                                            random.choice(palette),
+                                            stroke_width, opacity))
 
-            elements.append(_make_shape_svg(shape, cx, cy, radius, color, stroke_width, opacity))
+    return (f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">\n'
+            + "".join(elements)
+            + "</svg>")
 
-    svg = (f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">\n'
-           + "".join(elements)
-           + "</svg>")
 
+def generate_hex_svg(params, output_file: str) -> str:
+    """Build SVG and write it to output_file. Returns the path."""
+    svg = build_svg(params)
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(svg)
-
     return output_file
 
 
@@ -192,6 +189,39 @@ class DarkEntry(tk.Entry):
             return float(self.get())
         except ValueError:
             return fallback
+
+
+class DarkSlider(tk.Frame):
+    """Labelled horizontal scale with a live value readout."""
+    def __init__(self, parent, label, variable, from_, to, resolution,
+                 fmt="{:.2f}", on_change=None, **kw):
+        super().__init__(parent, bg=BG2, **kw)
+        self._fmt       = fmt
+        self._var       = variable
+        self._on_change = on_change
+
+        top = tk.Frame(self, bg=BG2)
+        top.pack(fill="x")
+        tk.Label(top, text=label, bg=BG2, fg=FG3, font=FONT_LBL).pack(side="left")
+        self._val_lbl = tk.Label(top, text=fmt.format(variable.get()),
+                                 bg=BG2, fg=ACCENT, font=FONT_MONO, width=6, anchor="e")
+        self._val_lbl.pack(side="right")
+
+        self._scale = tk.Scale(
+            self, variable=variable,
+            from_=from_, to=to, resolution=resolution,
+            orient="horizontal", showvalue=0,
+            bg=BG2, fg=FG2, troughcolor=BG3,
+            activebackground=ACCENT, highlightthickness=0,
+            bd=0, sliderlength=14, sliderrelief="flat",
+            command=self._on_slide
+        )
+        self._scale.pack(fill="x", pady=(2, 0))
+
+    def _on_slide(self, val):
+        self._val_lbl.config(text=self._fmt.format(float(val)))
+        if self._on_change:
+            self._on_change()
 
 
 class SectionFrame(tk.Frame):
@@ -293,19 +323,41 @@ class HexApp(tk.Tk):
         self._pattern_var           = tk.StringVar(value="helix")
         self._shape_var             = tk.StringVar(value="hexagon")
         self._inverse_var           = tk.BooleanVar(value=True)
+        self._amplitude_var         = tk.DoubleVar(value=0.5)   # 0.0–1.0
+        self._wavelength_var        = tk.DoubleVar(value=3.0)   # waves across canvas
         self._palette_btns          = []
 
         # FIX: will be set to a direct reference in _build_ui
         self._options_section_outer = None
+        self._cached_svg    = None   # SVG string from last preview generation
+        self._cached_params = None   # params that produced _cached_svg
 
         self._build_ui()
         self._on_pattern_change()
         self._on_color_mode_change()
 
+        # Bind mousewheel to every widget inside the left scroll panel
+        self._bind_scroll_to_children(self._left_canvas, self._left_canvas)
+
+        # Set resize cursor on the PanedWindow sash
+        self.after(50, lambda: self._paned_body.sash_place(0,
+            self._paned_body.sash_coord(0)[0], 0))
+
         self.update_idletasks()
         self.minsize(self.winfo_width(), self.winfo_height())
         # Trigger first preview after layout is complete
         self.after(100, self._update_preview)
+
+    def _bind_scroll_to_children(self, canvas, widget):
+        """Recursively bind mousewheel events to widget and all its children."""
+        def _mw(e):  canvas.yview_scroll(int(-1*(e.delta/120)), "units")
+        def _up(e):  canvas.yview_scroll(-1, "units")
+        def _dn(e):  canvas.yview_scroll(1, "units")
+        widget.bind("<MouseWheel>", _mw)
+        widget.bind("<Button-4>",   _up)
+        widget.bind("<Button-5>",   _dn)
+        for child in widget.winfo_children():
+            self._bind_scroll_to_children(canvas, child)
 
     # -- UI BUILD --------------------------
     def _build_ui(self):
@@ -318,20 +370,72 @@ class HexApp(tk.Tk):
                  font=("Courier New", 15)).pack(side="left")
         tk.Frame(self, bg=ACCENT, height=1).pack(fill="x", padx=16, pady=(0, 14))
 
-        # ── Two-column body ──────────────────────────────────────────────────
-        body = tk.Frame(self, bg=BG)
-        body.pack(fill="both", expand=True)
+        # ── Two-column body — PanedWindow for draggable sash ────────────────
+        body = tk.PanedWindow(
+            self, orient="horizontal",
+            bg=BG, sashwidth=5, sashrelief="flat",
+            sashpad=0, opaqueresize=True,
+            handlesize=0,        # hide the dot handle
+        )
+        body.pack(fill="both", expand=True, padx=0, pady=0)
+        self._paned_body = body
 
-        # Left column — controls (fixed width, scrolls naturally)
-        left = tk.Frame(body, bg=BG)
-        left.pack(side="left", fill="y", anchor="nw")
+        # ── Left pane — scrollable controls ─────────────────────────────────
+        left_outer = tk.Frame(body, bg=BG)
+        body.add(left_outer, minsize=260, width=340, stretch="never")
 
-        # Right column — preview + generate
+        # Style the sash to look like a thin BORDER-coloured divider
+        body.config(background=BORDER)
+
+        # Scrollbar
+        left_sb = tk.Scrollbar(left_outer, orient="vertical", bg=BG2,
+                               troughcolor=BG3, activebackground=ACCENT,
+                               highlightthickness=0, bd=0, width=6)
+        left_sb.pack(side="right", fill="y")
+
+        # Canvas viewport — fills left pane entirely
+        left_canvas = tk.Canvas(left_outer, bg=BG, highlightthickness=0,
+                                bd=0, yscrollcommand=left_sb.set)
+        left_canvas.pack(side="left", fill="both", expand=True)
+        self._left_canvas = left_canvas
+
+        left_sb.config(command=left_canvas.yview)
+
+        # Inner frame — all sections pack into this
+        left = tk.Frame(left_canvas, bg=BG)
+        left_canvas_window = left_canvas.create_window((0, 0), window=left,
+                                                        anchor="nw")
+
+        def _on_left_configure(event):
+            left_canvas.configure(scrollregion=left_canvas.bbox("all"))
+
+        def _on_left_canvas_resize(event):
+            # Inner frame always matches the canvas viewport width
+            left_canvas.itemconfig(left_canvas_window, width=event.width)
+
+        left.bind("<Configure>", _on_left_configure)
+        left_canvas.bind("<Configure>", _on_left_canvas_resize)
+
+        # Mouse-wheel scrolling
+        def _on_mousewheel(event):
+            left_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+        def _on_mousewheel_linux(event):
+            if event.num == 4:
+                left_canvas.yview_scroll(-1, "units")
+            elif event.num == 5:
+                left_canvas.yview_scroll(1, "units")
+
+        left_canvas.bind("<MouseWheel>",  _on_mousewheel)
+        left_canvas.bind("<Button-4>",    _on_mousewheel_linux)
+        left_canvas.bind("<Button-5>",    _on_mousewheel_linux)
+        left.bind("<MouseWheel>",  _on_mousewheel)
+        left.bind("<Button-4>",    _on_mousewheel_linux)
+        left.bind("<Button-5>",    _on_mousewheel_linux)
+
+        # ── Right pane — preview + generate ─────────────────────────────────
         right = tk.Frame(body, bg=BG)
-        right.pack(side="left", fill="both", expand=True, padx=(0, 16), pady=(0, 16))
-
-        # thin vertical separator
-        tk.Frame(body, bg=BORDER, width=1).place(relx=0, rely=0, relheight=1)
+        body.add(right, minsize=300, stretch="always")
 
         # ── Helper: SectionFrame into a specific parent ──────────────────────
         def left_section(title):
@@ -389,6 +493,21 @@ class HexApp(tk.Tk):
         self._count_unit_label = tk.Label(f, text="hexagons", bg=BG2, fg=FG3, font=FONT_SUB)
         self._count_unit_label.pack(side="left", padx=8)
 
+        # ── HELIX SETTINGS ──────────────────────────────────────────────────
+        sec = left_section("HELIX SETTINGS  (helix only)")
+        self._helix_section = sec
+        f = sec.body
+        DarkSlider(
+            f, "AMPLITUDE", self._amplitude_var,
+            from_=0.05, to=1.0, resolution=0.05, fmt="{:.2f}",
+            on_change=self._update_preview
+        ).pack(fill="x", pady=(0, 8))
+        DarkSlider(
+            f, "WAVELENGTH", self._wavelength_var,
+            from_=0.5, to=10.0, resolution=0.5, fmt="{:.1f}×",
+            on_change=self._update_preview
+        ).pack(fill="x")
+
         # ── GRID SETTINGS ───────────────────────────────────────────────────
         sec = left_section("GRID SETTINGS  (grid only)")
         self._grid_section = sec
@@ -410,7 +529,7 @@ class HexApp(tk.Tk):
         self._options_section_outer = sec.outer
         f   = sec.body
         self._inv_btn = tk.Checkbutton(
-            f, text="INVERSE STROKE  (small → thick)",
+            f, text="INVERSE STROKE  (Polygon size \u221D 1 / stroke thickness)",
             variable=self._inverse_var,
             bg=BG2, fg=FG2, selectcolor=BG3,
             activebackground=BG2, activeforeground=FG,
@@ -437,10 +556,12 @@ class HexApp(tk.Tk):
 
         self._palette_container = tk.Frame(f, bg=BG2)
         self._palette_container.pack(fill="x")
-        cols = 3
+        self._palette_container.columnconfigure(0, weight=1)
+        self._palette_container.columnconfigure(1, weight=1)
+        cols = 2
         for i, p in enumerate(PALETTES):
             btn = PaletteButton(self._palette_container, p, self._on_palette_select)
-            btn.grid(row=i // cols, column=i % cols, padx=4, pady=3, sticky="w")
+            btn.grid(row=i // cols, column=i % cols, padx=4, pady=3, sticky="ew")
             self._palette_btns.append(btn)
         self._palette_btns[0].set_selected(True)
 
@@ -486,7 +607,7 @@ class HexApp(tk.Tk):
 
         # ── GENERATE button ─────────────────────────────────────────────────
         self._gen_btn = tk.Button(
-            right, text="✦  GENERATE SVG",
+            right, text="✦  SAVE SVG",
             bg=ACCENT, fg="#000000",
             activebackground="#D96504", activeforeground="#000000",
             font=("Courier New", 10, "bold"),
@@ -538,28 +659,26 @@ class HexApp(tk.Tk):
             "spacing":           self.spacing_entry.get_float(0),
             "palette":           palette,
             "inverse_thickness": self._inverse_var.get(),
+            "amplitude":         self._amplitude_var.get(),
+            "wavelength":        self._wavelength_var.get(),
         }
         return params, scale, pw, ph
 
     def _update_preview(self):
-        """Generate SVG at full size, scale coords down, draw on white canvas."""
+        """Build SVG once, cache it, then render the scaled version on the canvas."""
         try:
-            import tempfile, os
             params, scale, pw, ph = self._build_preview_params()
+
+            # Build SVG at full resolution and cache — this is exactly what will be saved
+            svg_text = build_svg(params)
+            self._cached_svg    = svg_text
+            self._cached_params = params
 
             full_w, full_h = params["width"], params["height"]
             ratio_str = f"1:{1/scale:.1f}" if scale < 1 else f"{scale:.1f}:1"
             self._preview_dim_var.set(
                 f"{full_w} × {full_h} px  ·  preview {pw} × {ph} px  ({ratio_str})"
             )
-
-            with tempfile.NamedTemporaryFile(suffix=".svg", delete=False, mode="w",
-                                             encoding="utf-8") as tmp:
-                tmp_path = tmp.name
-            generate_hex_svg(params, tmp_path)
-            with open(tmp_path, encoding="utf-8") as f:
-                svg_text = f.read()
-            os.unlink(tmp_path)
             self._render_svg_on_canvas(svg_text, scale, pw, ph)
         except Exception:
             pass  # preview is best-effort; never crash the app
@@ -640,9 +759,14 @@ class HexApp(tk.Tk):
     def _on_pattern_change(self):
         if self._options_section_outer is None:
             return  # called before UI is fully built
-        is_grid = self._pattern_var.get() == "grid"
+        pattern = self._pattern_var.get()
+        is_grid  = pattern == "grid"
+        is_helix = pattern == "helix"
+
+        # Show/hide count vs grid sections
         if is_grid:
             self._count_section.outer.pack_forget()
+            self._helix_section.outer.pack_forget()
             self._grid_section.outer.pack_forget()
             self._grid_section.outer.pack(
                 fill="x", padx=16, pady=(0, 10),
@@ -655,6 +779,13 @@ class HexApp(tk.Tk):
                 fill="x", padx=16, pady=(0, 10),
                 before=self._options_section_outer
             )
+            # Show helix sliders only for helix mode
+            self._helix_section.outer.pack_forget()
+            if is_helix:
+                self._helix_section.outer.pack(
+                    fill="x", padx=16, pady=(0, 10),
+                    before=self._options_section_outer
+                )
         self._update_preview()
 
     def _on_color_mode_change(self):
@@ -673,57 +804,16 @@ class HexApp(tk.Tk):
 
     # -- GENERATE -------------------------
     def _run(self):
-        try:
-            width  = self.width_entry.get_int(1920)
-            height = self.height_entry.get_int(600)
-
-            # FIX: validate dimensions before spawning thread
-            if width <= 0 or height <= 0:
-                messagebox.showerror(
-                    "Input Error",
-                    f"Width and height must be positive integers (got {width}×{height})."
-                )
-                return
-
-            max_hex_size = min(width, height) / 2
-            raw_hex_size = self.size_entry.get_float(20)
-            hex_size     = min(raw_hex_size, max_hex_size)
-            if hex_size != raw_hex_size:
-                # Update the entry so the user sees the actual value used
-                self.size_entry.delete(0, tk.END)
-                self.size_entry.insert(0, f"{hex_size:.1f}")
-                messagebox.showwarning(
-                    "Hex Size Clamped",
-                    f"Hex size clamped from {raw_hex_size:.1f} to {hex_size:.1f} px\n"
-                    f"(max is half the shortest canvas dimension)."
-                )
-
-            raw_count = self.count_entry.get_int(250)
-            count     = max(1, raw_count)
-            if count != raw_count:
-                self.count_entry.delete(0, tk.END)
-                self.count_entry.insert(0, "1")
-
-            params = {
-                "pattern":           self._pattern_var.get(),
-                "shape":             self._shape_var.get(),
-                "width":             width,
-                "height":            height,
-                "count":             count,
-                "hex_size":          hex_size,
-                "spacing":           self.spacing_entry.get_float(0),
-                "inverse_thickness": self._inverse_var.get(),
-                "palette": (
-                    self._selected_palette_data
-                    if self._color_mode.get() == "color"
-                    else MONO_PALETTE["colors"]
-                ),
-            }
-        except Exception as e:
-            messagebox.showerror("Input Error", str(e))
+        # If no preview has been generated yet, build one now
+        if self._cached_svg is None:
+            self._update_preview()
+        if self._cached_svg is None:
+            messagebox.showerror("Error", "No preview to save. Click ↻ REFRESH first.")
             return
 
-        # FIX: ask the user where to save the file
+        params = self._cached_params
+
+        # Ask where to save
         timestamp    = datetime.now().strftime("%Y%m%d_%H%M%S")
         default_name = f"{params['shape']}_{params['pattern']}_{timestamp}.svg"
         output_file  = filedialog.asksaveasfilename(
@@ -735,27 +825,29 @@ class HexApp(tk.Tk):
         if not output_file:
             return  # user cancelled
 
-        self._gen_btn.config(state="disabled", text="  GENERATING...")
-        self._status_var.set("working...")
-        # FIX: use update_idletasks instead of update to avoid re-entrant events
+        self._gen_btn.config(state="disabled", text="  SAVING...")
+        self._status_var.set("saving...")
         self.update_idletasks()
+
+        svg_to_save = self._cached_svg  # capture before thread starts
 
         def worker():
             try:
-                filename = generate_hex_svg(params, output_file)
-                self.after(0, lambda: self._done(filename))
+                with open(output_file, "w", encoding="utf-8") as f:
+                    f.write(svg_to_save)
+                self.after(0, lambda: self._done(output_file))
             except Exception as exc:
                 self.after(0, lambda: self._error(exc))
 
         threading.Thread(target=worker, daemon=True).start()
 
     def _done(self, filename):
-        self._gen_btn.config(state="normal", text="✦  GENERATE SVG")
+        self._gen_btn.config(state="normal", text="✦  SAVE SVG")
         self._status_var.set(f"✓  saved → {filename}")
         self._status_label.config(fg=ACCENT2)
 
     def _error(self, exc):
-        self._gen_btn.config(state="normal", text="✦  GENERATE SVG")
+        self._gen_btn.config(state="normal", text="✦  SAVE SVG")
         self._status_var.set(f"✗  error: {exc}")
         self._status_label.config(fg="#D94141")
         messagebox.showerror("Generation Error", str(exc))
